@@ -92,10 +92,21 @@ e2e-testing/
 
 添加业务场景时：
 
-1. 把业务步骤和断言写在项目自己的 `tests/e2e/<scenario>.mjs`，导出 `name`、`title` 和 `run(task, config)`。
-2. 只有场景需要独立环境参数时，才在项目中配套新增 JSON 配置。
-3. 从项目根目录调用实际安装的全局或项目 runner，并将证据保存在该项目的 `.e2e-artifacts/`。
-4. 不把业务规则、业务脚本或项目路径写进全局技能；全局技能只提供跨项目通用流程和 runner。
+每个场景使用自己的目录，脚本、参数、场景说明和数据样例放在一起：
+
+```text
+tests/e2e/
+├── device-query/
+│   ├── scenario.mjs
+│   ├── config.example.json # 可选：配置模板
+│   ├── config.json       # 本机配置，可加入 .gitignore
+│   ├── README.md         # 可选：补充业务前置条件
+│   └── fixtures/         # 可选：此场景的数据样例
+└── order-flow/
+    └── scenario.mjs
+```
+
+runner 可直接接收场景目录，自动读取其中的 `scenario.mjs` 和可选 `config.json`。每个脚本导出 `name`、`title` 和 `run(task, config)`。从项目根目录运行，把证据保存在项目的 `.e2e-artifacts/`。项目保留自己的业务断言与数据；全局技能只提供通用 runner 和流程。
 
 ## 开发与验证
 

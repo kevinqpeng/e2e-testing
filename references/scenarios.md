@@ -2,7 +2,15 @@
 
 ## Run from the target project
 
-Set `E2E_SKILL_DIR` to the directory containing the SKILL.md actually installed/loaded. This is a shell variable for the command, never an absolute import in shared project source.
+Set `E2E_SKILL_DIR` to the directory containing the SKILL.md actually installed/loaded. This is a shell variable for the command, never an absolute import in shared project source. Put each scenario's files together in its own directory.
+
+Organize project cases as `tests/e2e/<scenario>/scenario.mjs`, optional `config.json`, optional `README.md`, and optional `fixtures/`. Pass the scenario directory to the runner; it loads `scenario.mjs` and a colocated `config.json` automatically. `--config <path>` overrides that config. Existing direct `.mjs` scenario paths remain supported.
+
+For example, from a project's root:
+
+```sh
+node "$E2E_SKILL_DIR/scripts/runner.mjs" --scenario ./tests/e2e/device-query
+```
 
 ```sh
 node "$E2E_SKILL_DIR/scripts/runner.mjs" \
@@ -16,7 +24,7 @@ For project installation, `E2E_SKILL_DIR="$PWD/.agents/skills/e2e-testing"`. For
 
 ## Module
 
-Export `name`, `title`, and `async run(task, config)`. It receives the ego TaskSpace and the JSON config, plus runner-owned `output`, `runId`, `scenario`, `scenarioTitle`. No application endpoints or credentials are supplied by the skill.
+Export `name`, `title`, and `async run(task, config)`. It receives the ego TaskSpace and scenario config, plus runner-owned `output`, `runId`, `scenario`, `scenarioTitle`. Keep scenario-only files and data in that scenario directory. No application endpoints or credentials are supplied by the skill.
 
 Return a JSON-serializable result, or write `result.json` into config.output for existing scenarios. The runner binds run metadata and computes the final status; the scenario must provide actual checks:
 

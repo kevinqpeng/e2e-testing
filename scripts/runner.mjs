@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { realpathSync } from 'node:fs';
-import { access, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { access, mkdir, mkdtemp, readFile, stat, writeFile } from 'node:fs/promises';
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { parseArgs } from 'node:util';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -71,10 +71,15 @@ export async function main(args = process.argv.slice(2)) {
   } });
   if (values.help) { console.log(help); return 0; }
   if (!values.scenario) throw new Error(help);
-  const modulePath = resolve(values.scenario);
+  const scenarioPath = resolve(values.scenario);
+  const scenarioInfo = await stat(scenarioPath);
+  const scenarioDirectory = scenarioInfo.isDirectory() ? scenarioPath : undefined;
+  const modulePath = scenarioDirectory ? join(scenarioDirectory, 'scenario.mjs') : scenarioPath;
   const scenario = await import(pathToFileURL(modulePath).href);
   if (typeof scenario.run !== 'function') throw new Error('Scenario must export run(task, config)');
-  const supplied = values.config ? await json(resolve(values.config)) : {};
+  const configPath = values.config ? resolve(values.config)
+    : scenarioDirectory ? join(scenarioDirectory, 'config.json') : undefined;
+  const supplied = configPath ? await optionalJson(configPath) ?? {} : {};
   if (!supplied || Array.isArray(supplied) || typeof supplied !== 'object') throw new Error('Config must be a JSON object');
   const spaceId = process.env.E2E_SPACE_ID;
   if (spaceId && !/^[1-9]\d*$/.test(spaceId)) throw new Error('E2E_SPACE_ID must be a positive integer');
