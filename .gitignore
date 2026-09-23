@@ -1,0 +1,6 @@
+node_modules/
+.e2e-artifacts/
+.env
+.env.*
+!.env.example
+.DS_Store
